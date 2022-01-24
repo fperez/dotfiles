@@ -1,0 +1,383 @@
+#!/bin/bash
+# -*- sh -*-
+
+# Utilities for bash config files
+
+# Contact: Fernando Perez <fdo.perez@gmail.com>
+
+#-----------------------------------------------------------------------------
+# Useful constants
+
+# For os, user or processor dependent config
+UNAME=$(uname)
+MACHINE=$(uname -m)
+PROCESSOR=$(uname -p)
+HOST=$(hostname | sed 's/\..*//')
+WHOAMI=$(whoami)
+
+# Python version information
+PYVER=$(python -ESV 2>&1)
+PYVER_MINOR=${PYVER#Python }
+PYVER_MAJOR=${PYVER_MINOR:0:3}
+
+# Names for common ANSI color escapes.  Note: the initial and final escaped [/]
+# are needed for line lengths to be correctly computed.  Otherwise
+# tab-completion produces incorrect wrapping problems.
+
+# dark colors
+BLACK="\[\033[0;30m\]"
+RED="\[\033[0;31m\]"
+GREEN="\[\033[0;32m\]"
+BROWN="\[\033[0;33m\]"
+BLUE="\[\033[0;34m\]"
+PURPLE="\[\033[0;35m\]"
+CYAN="\[\033[0;36m\]"
+L_GRAY="\[\033[0;37m\]"
+# light colors
+GRAY="\[\033[1;30m\]"
+L_RED="\[\033[1;31m\]"
+L_GREEN="\[\033[1;32m\]"
+YELLOW="\[\033[1;33m\]"
+L_BLUE="\[\033[1;34m\]"
+L_PURPLE="\[\033[1;35m\]"
+L_CYAN="\[\033[1;36m\]"
+WHITE="\[\033[1;37m\]"
+# to revert to the default font color
+NO_COLOR="\[\033[0m\]"
+
+#-----------------------------------------------------------------------------
+# Functions begin
+
+# The common paths that the first group of functions manage is:
+# PATH: binary execution
+# LD_LIBRARY_PATH: dynamic linker search path
+# LIBRARY_PATH: static linking by gcc (like -L)
+# CPATH: generic include path for gcc (like -I), used for all languages
+# C_INCLUDE_PATH: C-specific include path, after CPATH
+# CPLUS_INCLUDE_PATH: C++-specific include path, after CPATH
+# PYTHONPATH: search path for python packages
+
+function mk_pathspec {
+    # Basic path spec generator, used by the mk_genpath* functions
+
+    # Inputs:
+    local prefixes=$1  # list of prefixes for path construction
+    local ptypes=$2     # type of the path ('bin','lib', 'include', etc)
+
+    # Code begins
+    local ppath=''
+    local prefix
+    local pt
+
+    for prefix in $prefixes
+    do
+	for pt in $ptypes
+	do
+	    ppath="$ppath:$prefix/$pt"
+	done
+    done
+    echo $ppath
+}
+
+
+function mk_genpath {
+    # Generic path spec generator (for unqualified, 32-bit only path specs)
+
+    # Inputs:
+    local prefixes=$1  # list of prefixes for path construction
+    local ptype=$2     # type of the path ('bin','lib', 'include', etc)
+    local postfix=${3:-" "}   # possible postfix to be appended after $ptype
+
+    # Check that postfix is non-whitespace
+    if [[ $postfix = *[![:space:]]* ]]; then
+	ptype="$ptype/$postfix"
+    fi
+
+    echo $(mk_pathspec "$prefixes" "$ptype")
+}
+
+
+function mk_genpath64 {
+    # Path spec generator, that produces 64-bit specific paths.  On a 32-bit
+    # system this works like mk_genpath, but on x86_64 architectures each path
+    # component is produced both in $ptype and ${ptype}64 versions.  This is
+    # useful for things like 'lib64:lib' combinations.
+
+    # Inputs:
+    local prefixes=$1  # list of prefixes for path construction
+    local ptype=$2     # type of the path ('bin','lib', 'include', etc)
+    local postfix=${3:-" "}   # possible postfix to be appended after $ptype
+
+    local ptypeout
+
+    if [[ $MACHINE == "x86_64" ]]; then  # 64-bit OS
+
+	# Check that postfix is non-whitespace
+	if [[ $postfix = *[![:space:]]* ]]; then
+	    ptypeout="${ptype}64/$postfix $ptype/$postfix"
+	fi
+    else  # 32-bit OS
+	# Check that postfix is non-whitespace
+	if [[ $postfix = *[![:space:]]* ]]; then
+	    ptypeout="$ptype/$postfix"
+	fi
+
+    fi
+
+    echo $(mk_pathspec "$prefixes" "$ptypeout")
+}
+
+# Specific functions to create certain common types of paths
+
+# PATH: binary execution
+function mk_path {
+    echo $(mk_genpath "$1" bin)
+}
+
+
+# CPATH: generic include path for gcc (like -I), used for all languages
+# C_INCLUDE_PATH: C-specific include path, after CPATH
+# CPLUS_INCLUDE_PATH: C++-specific include path, after CPATH
+function mk_cpath {
+    echo $(mk_genpath "$1" include)
+}
+
+
+# LIBRARY_PATH: static linking by gcc (like -L)
+function mk_library_path {
+    echo $(mk_genpath64 "$1" lib)
+}
+
+
+# LD_LIBRARY_PATH: dynamic linker search path
+function mk_ld_library_path {
+    echo $(mk_genpath64 "$1" lib)
+}
+
+
+# PYTHONPATH: search path for python packages
+function mk_pythonpath {
+    local pypath=python${2-$PYVER_MAJOR}/site-packages
+    echo $(mk_genpath64 "$1" lib "$pypath")
+}
+
+
+# MANPATH: search path for man pages.
+# See the manpath man page for details on what starting/end colons mean.
+function mk_manpath {
+    echo $(mk_genpath "$1" share/man)
+}
+
+
+function export_paths {
+    # Export all common paths based on a list of prefixes
+    #
+    # Inputs:
+    #   prefixes -- a list of prefixes to export all common paths for.
+
+    local prefixes=$1
+
+    # PATH: binary execution
+    export PATH=$(mk_path "$prefixes"):$PATH
+
+    # CPATH: generic include path for gcc (like -I), used for all languages
+    # C_INCLUDE_PATH: C-specific include path, after CPATH
+    # CPLUS_INCLUDE_PATH: C++-specific include path, after CPATH
+    export CPATH=$(mk_cpath "$prefixes"):$CPATH
+
+    # LIBRARY_PATH: static linking by gcc (like -L)
+    export LIBRARY_PATH=$(mk_library_path "$prefixes"):$LIBRARY_PATH
+
+    # LD_LIBRARY_PATH: dynamic linker search path
+    export LD_LIBRARY_PATH=$(mk_ld_library_path "$prefixes"):$LD_LIBRARY_PATH
+
+    # PYTHONPATH: search path for python packages
+    #export PYTHONPATH=$(mk_pythonpath "$prefixes"):$PYTHONPATH
+
+    # MANPATH: search path for man pages.
+    local manpath=$(mk_manpath "$prefixes"):$MANPATH
+    # Note, this may be a bit buggy regarding colon positioning, not all edge
+    # cases covered.  I assume here that mk_manpath returns colon-prefixed
+    # strings and strip the first character.
+    export MANPATH=${manpath:1}
+}
+
+
+function cdiff {
+    # Call colordiff, pipe to less
+    colordiff -u $@ | less
+}
+
+
+function add_ppa_key {
+    # Add a key from the Ubuntu PPA to the system's keyring
+    # Usage
+    #   add_ppa_key key_signature
+    # See https://help.launchpad.net/Packaging/PPA for details
+
+    local keysig=$1
+    local tmpkey=$(mktemp -p /tmp ppa-key.XXXXXXXXXX)
+
+    gpg --no-default-keyring --keyring $tmpkey \
+	--keyserver keyserver.ubuntu.com --recv  $keysig
+    gpg --no-default-keyring --keyring $tmpkey --export --armor $keysig | \
+	sudo apt-key add -
+    rm -f $tmpkey
+}
+
+
+function pybuild {
+    # Clean a python tree and build all extension code in place
+    echo "Cleaning up directory with grot"
+    grot
+    echo "Running a python clean/build pass"
+    python setup.py clean
+    python setup.py build_ext --inplace
+}
+
+
+
+function mvl {
+    # Move a symlink - rename the target a symlink points to
+
+    # strip possible trailing '/'s from the source and target
+    local linkname=${1/%\//""}
+    local target=${2/%\//""}
+
+    if [[ ! -L $linkname ]]; then
+	echo "ERROR: Filename $linkname must be a symlink"
+	return
+    fi
+    rm -f $linkname
+    ln -s $target $linkname
+    }
+
+
+function codeprint {
+    enscript  -G2rjE --color $1
+}
+
+
+function codeps {
+    enscript  -G2rjE --color -o $1.ps $1
+    gv $1.ps
+}
+
+
+# shows the git history as ASCII graph
+# from: http://www.ralfebert.de/blog/tools/git_log_helper/
+function glog() {
+    git log --oneline --topo-order --graph $@
+}
+
+
+# Show git authors for the specified commit range
+function gauthor() {
+    git log "$@" | grep '^Author' | cut -d' ' -f 2- | sort | uniq
+}
+
+
+# http://www.ralfebert.de/blog/tools/www_here/
+function www_here {
+    python -c 'import SimpleHTTPServer,SocketServer;PORT=1234;httpd = SocketServer.TCPServer(("", PORT),SimpleHTTPServer.SimpleHTTPRequestHandler); print "serving at port", PORT; httpd.serve_forever()'
+}
+
+
+function airplane-mode {
+    local mode=${1:-"on"}
+
+    if [[ "$mode" == "on" ]]; then
+	action="stop"
+	sudo rfkill block bluetooth
+	sudo rfkill block wlan
+    else
+	action="start"
+	sudo rfkill unblock bluetooth
+	sudo rfkill unblock wlan
+    fi
+
+    #services="network-manager networking ntp avahi-daemon portmap cups ssh"
+    services="ntp portmap cups ssh"
+
+    for service in $services
+    do
+        sudo service $service $action
+    done
+
+    echo
+    echo "Airplane mode now: $mode"
+    }
+    
+
+function set_title ()
+{
+    echo -ne "\033]0;$1\007"
+}
+
+
+function kbfix-xfce ()
+{
+    rm -f $HOME/.config/xfce4/panel/xkb-plugin-6.rc
+    rm -f $HOME/.config/xfce4/panel/xkb-plugin-7.rc
+    rm -f $HOME/.config/xfce4/panel/xkb-plugin-12.rc
+    rm -f $HOME/.config/xfce4/panel/xkb-plugin-35.rc
+    cp $HOME/.config/xfce4/panel/xkb-plugin-6-good.rc $HOME/.config/xfce4/panel/xkb-plugin-6.rc
+    cp $HOME/.config/xfce4/panel/xkb-plugin-6-good.rc $HOME/.config/xfce4/panel/xkb-plugin-7.rc
+    cp $HOME/.config/xfce4/panel/xkb-plugin-6-good.rc $HOME/.config/xfce4/panel/xkb-plugin-12.rc
+    cp $HOME/.config/xfce4/panel/xkb-plugin-6-good.rc $HOME/.config/xfce4/panel/xkb-plugin-35.rc
+    pkill xkb
+}
+
+
+function kc ()
+{
+   if [ $# -eq 0 ] # no arguments supplied
+   then
+       key=id_rsa
+   else
+       key=id_rsa_$1
+   fi
+   keychain $HOME/.ssh/$key
+}
+
+
+function ssh-on ()
+{
+    if [[ "$1" ]]; then
+	id=_$1
+    fi
+    ssh-add $HOME/.ssh/id_rsa$id
+}
+
+function killall2 ()
+{
+    plist=`ps aux | grep $1 | awk '{print $2}' `
+    echo "Matching PIDs: " $plist
+    kill -9 $plist
+}
+
+function open2()
+{
+    xdg-open "$1" &
+}
+
+
+function make-dotfiles()
+{
+    tar czf ~/dotfiles.tgz .bashrc .bash_profile .bash_utils .bash-git-* \
+    .gitconfig .gitignore
+}
+
+function ssh-github()
+{
+    # I had this as an alias, but it's safer to know that it only prints 
+    # the command I should type, to prevent it being overridden by another admin
+    echo "Copy and paste the following into your terminal:"
+    echo 'eval "$(/usr/bin/ssh-agent -s)" && /usr/bin/ssh-add ~/.ssh/id_ed25519_github'
+}   
+# https://superuser.com/questions/144772/finding-the-definition-of-a-bash-function
+# Todo: Add support to get the code for the function with `type -a function_name`
+# Also check with which and alias, to have a super-which that finds scripts, aliases
+# and shell functions
+whichfunc () ( shopt -s extdebug; declare -F "$1"; )
+#*********************** End of file <.bash_utils> *************************

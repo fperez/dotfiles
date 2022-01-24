@@ -1,0 +1,339 @@
+# .bashrc - started by interactive non-login shells
+
+# useful:
+# http://tldp.org/LDP/abs/html/sample-bashrc.html
+
+# Contact: Fernando Perez <fdo.perez@gmail.com>
+
+############################################################################
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+	. /etc/bashrc
+fi
+
+# Only load system bash_completion if it hasn't been read yet (it defines some
+# read-only variables and will error out if you read it twice).
+if [[ -z $BASH_COMPLETION && -e /etc/bash_completion ]]; then
+    source /etc/bash_completion
+fi
+
+############################################################################
+# Configure shell for git usage - these two are static copies of git utils
+
+if [ -f $HOME/.bash-git-completion ]; then
+    . $HOME/.bash-git-completion
+fi
+
+if [ -f $HOME/.bash-git-prompt ]; then
+    . $HOME/.bash-git-prompt
+fi
+
+
+############################################################################
+# My usual login name on most machines.  This file is set to display any login
+# that is NOT this one in red (root, when I log into machines with an atypical
+# login, etc.).
+export MYLOGIN="fperez"
+
+############################################################################
+#
+# Load basic bash utilities (handy functions and constants)
+#
+if [ -f $HOME/.bash_utils ]; then
+    . $HOME/.bash_utils
+fi
+
+#
+# Initialize $PATH with homebrew and conda locations so I can find their tools
+# when working over SSH (such as remote rsync calls)
+export PATH=/usr/local/bin:/usr/local/sbin:$HOME/local/conda/bin:$PATH
+
+
+# Configure paths, using the path generation functions in .bash_utils
+#
+# These are the prefixes I typically use as --prefix options for installation 
+# of packages.  There's a method to the madness of having several of them, and
+# in this order.  The ones at the TOP end up first in the generated path specs,
+# so they take precedence.
+pfx="$pfx $HOME/tmp/junk"  # quick and dirty testing
+#pfx="$pfx $HOME/tmp/local"  # temporary, stable testing
+pfx="$pfx $HOME/usr"  # codes *I* have written
+#pfx="$pfx $HOME/usr/opt"  # I don't sync this across computers
+pfx="$pfx $HOME/usr/local"  # default prefix for third-party installs
+pfx="$pfx $HOME/.local"  # used by python in --user installs
+
+# NO: don't make the conda location a valid prefix until further investigation.
+# If homebrew finds the conda libraries, things break in very confusing ways.
+#pfx="$pfx $HOME/local/conda"  # used by Anaconda
+
+
+# Now, set all common paths based on the prefix list just built.  The
+# export_paths function ensures that all commonly needed paths get correctly
+# set and exported to the environment.
+export_paths "$pfx"
+
+#echo "stop here"  && return
+
+# Default prefix for personal installs I use.
+export PREFIX=$HOME/usr/local
+
+# This is the name CMAKE uses for the same thing
+export CMAKE_INSTALL_PREFIX=$PREFIX
+
+# Search paths for LaTeX (Dont' forget the final colons.  The null entry `::'
+# denotes `default system directories' -- try finding that in the
+# documentation.)  Note that these *must* go under ~/texmf, because that
+# particular path is hardcoded in LaTeX and is not overridable by the user.
+# While one could keep ~/texmf for default package installs and use other
+# locations for {tex/bib/bst}inputs, I prefer to centralize all Tex stuff in
+# one place.  Since I can't do it in ~/usr/tex, then I'll just keep everything
+# TeX related in ~/texmf
+export TEXINPUTS=.:$HOME/texmf/texinputs::
+export BIBINPUTS=.:$HOME/texmf/bibinputs::
+export BSTINPUTS=.:$HOME/texmf/bstinputs::
+
+# Seaborn's data cache
+export SEABORN_DATA=$HOME/local/seaborn-data
+
+##############################################################################
+#
+# other environment variables
+#
+export EDITOR=emacs
+export CSHEDIT=emacs
+export ENSCRIPT=-MLetter
+export PAGER=less
+#export LESS=-r  # Seems to cause problems on OSX
+#export BROWSER="google-chrome&"
+
+# Locale configuration
+#export LANG=en_US.UTF-8
+#export LC_ALL=en_US.UTF-8
+
+# readline config
+export INPUTRC=$HOME/.inputrc
+
+# Avoid duplicates in history
+export HISTIGNORE="&:exit"
+
+# change colors defaults: swap directory/link (cyan is easier to see for dirs)
+export LS_COLORS='no=00:fi=00:di=01;36:ln=01;34:pi=40;33:so=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jpg=01;35:*.png=01;35:*.gif=01;35:*.bmp=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.png=01;35:*.mpg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:'
+
+# Use GREP color features by default
+export GREP_OPTIONS='--color=auto'
+
+# Default options for ACK
+export ACK_OPTIONS=--text
+
+# SSH askpass config for KDE
+#export SSH_ASKPASS=/usr/bin/ksshaskpass
+
+############################################################################
+#
+# aliases
+#
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    alias ls='/bin/ls -F --color=tty'
+    alias d="pwd; ls -o"
+    alias dd='pwd; ls --color -o | grep /$'
+    alias dx='pwd; ls --color -o | grep ^-..x'
+    alias dp='pwd; ls --color -o | grep ^-..x'
+    alias dl='pwd; ls --color -o | grep ^l'
+    alias yup='sudo apt-get update;sudo apt-get -y --force-yes dselect-upgrade';
+    alias pfox='firefox -new-instance -ProfileManager &'
+    alias nocaps='setxkbmap -option "ctrl:nocaps"'
+    alias ccopy='xclip -in -selection c'
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    alias ls='/bin/ls -FG'
+    alias d="pwd; ls -o"
+    alias dd='pwd; ls -o | grep /$'
+    alias dx='pwd; ls -o | grep ^-..x'
+    alias dp='pwd; ls -o | grep ^-..x'
+    alias dl='pwd; ls -o | grep ^l'
+    alias git=hub
+    alias bup='brew update && brew upgrade'
+    alias tmoff='diskutil unmount /Volumes/Time\ Machine\ -\ Seagate\ Silver'
+    alias today='date "+%b %d, %Y" | tr -d "\n" | pbcopy'
+    alias add='pbcopy < $HOME/.address'
+    alias pbclean='pbpaste | pbcopy'
+    alias emacsapp='open -a /Applications/Emacs.app/'
+    alias zoom='echo "https://berkeley.zoom.us/my/fperez" | pbcopy'
+    alias zoom2='echo "https://lbnl.zoom.us/my/fperez" | pbcopy'
+    alias email='echo "fernando.perez@berkeley.edu" | pbcopy'
+    alias orcid='echo 0000-0002-1725-9815 | pbcopy'
+else
+    echo "No OS-specific aliases, OS unknown.";
+fi
+
+# Various update aliases
+alias cup='mamba update --all --yes'
+alias aup='conda update --all --yes'
+alias cclean='conda clean -pity'
+alias cnuke='conda remove --all --yes -n'
+alias mrup='mr -d $HOME update'
+
+alias r2d='jupyter-repo2docker'
+
+
+alias pd=pushd
+alias pop=popd
+alias cl=clear
+alias lo=exit
+alias e=echo
+alias c=cd
+alias h=cd        # home
+alias u="cd .."   # up
+alias p="cd -"    # previous
+alias o="cd ..;cd \!^ ; pwd" # up and cd
+alias over="cd ..;cd \!^ ; pwd"  # same as o
+alias clk='rm -f *~ .*~ *.bak .dircopy.log;rm -rf .ipynb_checkpoints'
+alias clu='rm -f *~ .*~ *.bak .dircopy.log;rm -rf .ipynb_checkpoints;rm -f [Uu]ntitled*'
+alias clk2='rm -f $(find . -name "*~")'
+alias clp='rm -f *~ .*~ *.pyc *.pyo'
+alias ec='emacs -nw ~/.bashrc'
+alias sc='source ~/.bashrc'
+alias sutil='source ~/.bash_utils'
+alias igrep='egrep -i'
+alias ig='egrep -i'
+alias dfsumm="df -h | head -1 ; df -h | grep -v '^File' | sort"
+alias dus='du -s * . | sort -n'
+alias whoelse='date; who | grep -v `whoami` | sort '
+alias hist='history | cut -d " " -f 5-'
+alias gt='gnome-terminal . &'
+alias tm='tmux attach || tmux'
+alias livelines="egrep -v '^#|^$'"
+alias nocomment='grep "^[:space:][^#]"'
+alias dm='docker-machine'
+alias dmon='eval "$(docker-machine env default)"'
+alias lc="rename 'tr/[A-Z]/[a-z]/'"
+alias showip='ifconfig | grep "inet "'
+
+# Found at http://separaterealities.com/blag/?p=25
+# Useful way to quickly remember the CWD from one shell to reuse it in others.
+alias saved='echo pwd > ~/.savedir'
+alias showd='cat ~/.savedir'
+alias god='cd `cat ~/.savedir`'
+
+# Git-related aliases
+alias gcmb="git branch --merged | grep -Ev '(^\*|master)' | xargs git branch -d"
+
+# Identify tabs in files
+alias findtabs='grep -n "\t"'
+
+# Make a directory of small pics for email
+alias imresizeall="imresize --outdir=small *.jpg *.JPG"
+
+# Emacs-related aliases
+# Plain-terminal emacs
+alias em='emacs -nw'
+# Fast-starting emacs
+alias emq='emacs -nw --no-init-file --no-site-file --load $HOME/.emacs.conf.d/init-minimal.el'
+# start emacsclient to quickly open a file in a running emacs
+alias emc='emacsclient -c -n'
+
+alias make2dag='make -Bnd | make2graph | dot -Tpng -o make-dag.png'
+
+# Fix function keys on apple keyboard for linux systems
+#alias fix_apple_kbd='echo 2 | sudo tee /sys/module/hid_apple/parameters/fnmode'
+
+alias t='time'
+
+alias f='find . | grep '
+
+alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+
+# Aliases for the fpsync script in various modes, as well as other simple
+# synchronization calls
+
+ETC=$HOME/usr/etc
+
+# Convenience fpsync wrapper with message, wait and timing
+function hsync {
+    local host=${1:-"longs"}
+    local mode=${2:-"sync"}
+
+    if [[ "$mode" == "up" ]]; then
+        echo "*** Destructive upload to: $host"
+    elif [[ "$mode" == "down" ]]; then
+        echo "*** Destructive download from: $host"
+    else
+        echo "*** Two-way sync with: $host"
+    fi
+    echo "*** Sleeping for 2 seconds..."
+    sleep 2
+    time fpsync --host $host $mode
+
+}
+
+# Sync with longs, server in Stats office at Berkeley
+alias longssync-up='hsync longs up'
+alias longssync-down='hsync longs down'
+
+# Sync with ritacuba, home desktop. Only works in home network.
+alias ritacubasync-up='hsync ritacuba up'
+alias ritacubasync-down='hsync ritacuba down'
+
+##############################################################################
+#
+# Python config: environment variables and aliases
+#
+
+# Set startup file for interactive sessions
+#export PYTHONSTARTUP=$HOME/.pythonstartup.py
+
+# Always direct pip installations to --user location
+export PIP_USER=True
+
+# IPython completions
+#source "$HOME/dev/ipython/ipython/examples/IPython Kernel/ipython-completion.bash"
+
+# Python aliases
+alias fdbg="egrep -n 'dbg|debugx\(' *py */*.py */*/*.py */*/*/*.py | egrep -v '\.dbg|def debugx|\:[[:space:]]*\#'"
+alias fdbgc="egrep -n 'dbg' *.c *.C *.cxx *.cpp | egrep -v '\:[[:space:]]*\//'"
+
+# IPython config
+alias ip='ipython'
+
+alias pycolor="pygmentize -l python -f terminal16m -O style=monokai"
+alias pyg="pygmentize -f terminal16m -O style=monokai"
+
+# Conda environments
+alias con="source $HOME/dev/copip/cactivate"  # this one opens a subshell
+
+alias pyx="python -c \"import sys;from math import *;print(eval(' '.join(sys.argv[1:])))\" "
+
+##############################################################################
+#
+# Interactive login shell configuration
+
+# Interactive prompt
+if [[ "$WHOAMI" == "$MYLOGIN" ]]; then
+    USERNAME=""
+else
+    USERNAME="$WHOAMI@"
+fi
+
+# Declare the main prompt
+if [[ "$TERM" == "dumb" ]]; then  # no colors
+    PS1="${USERNAME}\h[\W]> "
+else
+    PS1="$GREEN\$(__git_ps1 '(%s)')$L_RED${USERNAME}$L_BLUE\h[$L_CYAN\W${L_BLUE}]$L_GREEN> $NO_COLOR"
+    #PS1="$L_RED${USERNAME}$L_BLUE\h[$L_CYAN\W${L_BLUE}]$L_GREEN> $NO_COLOR"
+fi
+
+# Various options for interactive behavior
+shopt -s cdspell
+shopt -s cmdhist
+shopt -s dotglob
+shopt -s extglob
+
+# bind a few keys to search patterns
+bind '"\e[A"':history-search-backward
+bind '"\e[B"':history-search-forward
+bind "C-p":history-search-backward
+bind "C-n":history-search-forward
+
+# Activate gui popup for ssh passphrases
+#eval `gnome-keyring-daemon -s`
+#**********************  END OF FILE <.bashrc> *******************************
