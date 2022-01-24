@@ -20,12 +20,12 @@ fi
 ############################################################################
 # Configure shell for git usage - these two are static copies of git utils
 
-if [ -f $HOME/.bash-git-completion ]; then
-    . $HOME/.bash-git-completion
+if [ -f $HOME/.git-completion.bash ]; then
+    . $HOME/.git-completion.bash
 fi
 
-if [ -f $HOME/.bash-git-prompt ]; then
-    . $HOME/.bash-git-prompt
+if [ -f $HOME/.git-prompt.sh ]; then
+    . $HOME/.git-prompt.sh
 fi
 
 
