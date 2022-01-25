@@ -35,7 +35,6 @@ if [ -f $HOME/.git-prompt.sh ]; then
     . $HOME/.git-prompt.sh
 fi
 
-
 ############################################################################
 # My usual login name on most machines.  This file is set to display any login
 # that is NOT this one in red (root, when I log into machines with an atypical
@@ -50,11 +49,9 @@ if [ -f $HOME/.bash_utils ]; then
     . $HOME/.bash_utils
 fi
 
-#
 # Initialize $PATH with homebrew and conda locations so I can find their tools
 # when working over SSH (such as remote rsync calls)
 export PATH=/usr/local/bin:/usr/local/sbin:$HOME/local/conda/bin:$PATH
-
 
 # Configure paths, using the path generation functions in .bash_utils
 #
@@ -72,7 +69,6 @@ pfx="$pfx $HOME/.local"  # used by python in --user installs
 # NO: don't make the conda location a valid prefix until further investigation.
 # If homebrew finds the conda libraries, things break in very confusing ways.
 #pfx="$pfx $HOME/local/conda"  # used by Anaconda
-
 
 # Now, set all common paths based on the prefix list just built.  The
 # export_paths function ensures that all commonly needed paths get correctly
@@ -111,7 +107,6 @@ export CSHEDIT=emacs
 export ENSCRIPT=-MLetter
 export PAGER=less
 #export LESS=-r  # Seems to cause problems on OSX
-#export BROWSER="google-chrome&"
 
 # Locale configuration
 #export LANG=en_US.UTF-8
@@ -326,6 +321,10 @@ fi
 
 if [[ "$TERM" == "dumb" ]]; then  # no colors
     PS1="${USERNAME}\h[\W]> "
+elif [[ "$WHOAMI" == "jovyan" ]]; then
+    PS1="$GREEN\$(__git_ps1 '(%s)')$L_BLUE\h[$L_CYAN\W${L_BLUE}]$L_GREEN> $NO_COLOR"
+
+    #PS1="$GREEN\$(__git_ps1 '(%s)')$L_RED${USERNAME}${L_BLUE}JupyterHub[$L_CYAN\W${L_BLUE}]$L_GREEN> $NO_COLOR"
 else
     PS1="$GREEN\$(__git_ps1 '(%s)')$L_RED${USERNAME}$L_BLUE\h[$L_CYAN\W${L_BLUE}]$L_GREEN> $NO_COLOR"
     #PS1="$L_RED${USERNAME}$L_BLUE\h[$L_CYAN\W${L_BLUE}]$L_GREEN> $NO_COLOR"
