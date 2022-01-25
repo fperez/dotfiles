@@ -1,5 +1,12 @@
 # .bashrc - started by interactive non-login shells
 
+# echo '*** this is .bashrc' # dbg
+
+# On macOS - New iTerm windows/tabs do NOT run this file by default, unless
+# it gets explicitly sourced from ~/.bash_profile.
+
+# On JupyterHub - new terminals run only this file, andf NOT .bash_profile.
+
 # useful:
 # http://tldp.org/LDP/abs/html/sample-bashrc.html
 
@@ -331,6 +338,31 @@ bind '"\e[B"':history-search-forward
 bind "C-p":history-search-backward
 bind "C-n":history-search-forward
 
-# Activate gui popup for ssh passphrases
-#eval `gnome-keyring-daemon -s`
+
+# Conda configuration for environment management
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/fperez/local/conda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/fperez/local/conda/etc/profile.d/conda.sh" ]; then
+        . "/Users/fperez/local/conda/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/fperez/local/conda/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+
+if [ "$CONDA_DEFAULT_ENV" == "base" ] && [ -d "$CONDA_PREFIX/copip" ]
+then
+    #echo "*** DBG: default copip"  # dbg
+    source $HOME/dev/copip/copipon.sh
+else
+    #echo "*** DBG: NO CONDA"  # dbg
+    export JUPYTER_PATH=$HOME/.local/share/jupyter
+fi
 #**********************  END OF FILE <.bashrc> *******************************
