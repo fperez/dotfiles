@@ -1,0 +1,77 @@
+# -*- mode: conf -*-
+[user]
+	name = Fernando Pérez
+	email = fernando.perez@berkeley.edu
+
+[include]
+  # For Github username / creds / system-specific stuff, etc
+  path = ~/.gitconfig.local
+
+[init]
+	defaultBranch = main
+
+[core]
+	excludesfile = ~/.gitignore
+
+[alias]
+	ci = commit -a
+	cp = commit -a -m"Checkpoint"
+	co = checkout
+	st = status
+	br = branch
+    uncommit = reset HEAD^
+    ltag = tag -l -n3
+	wdiff = diff --color-words
+	slog  = log --graph --topo-order --oneline
+    slog2 = log --graph --topo-order --abbrev-commit --date=relative --pretty=format:'%C(yellow)%h%Creset %s %Cgreen(%cr) %C(red)%d%Creset %C(bold blue)[%an]%Creset'
+    targz = !git archive --prefix=`basename $PWD`/ master| gzip > `basename $PWD`.tar.gz
+
+[color]
+	branch = auto
+	diff = auto
+	status = auto
+	pager = true
+	ui = auto
+	wtf = true
+
+[url "git://github.com/"]
+	insteadof = gh:
+
+[url "git@github.com:"]
+	pushInsteadOf = git://github.com/
+
+[url "https://"]
+	insteadOf = git://
+    
+[push]
+	default = tracking
+	
+[pull]
+	rebase = false
+
+[branch]
+	autosetupmerge = true
+
+[diff]
+	rename = copy
+	compactionHeuristic = true
+
+[apply]
+	whitespace = strip
+	
+[help]
+	autocorrect = 10
+
+[pager]
+	log  = diff-highlight | less
+	show = diff-highlight | less
+	diff = diff-highlight | less
+
+[interactive]
+	diffFilter = diff-highlight
+
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
