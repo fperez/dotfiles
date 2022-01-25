@@ -318,7 +318,12 @@ else
     USERNAME="$WHOAMI@"
 fi
 
-# Declare the main prompt
+# Declare the main prompt.
+# Note - bash accepts the following special chars in PS1 strings:
+# \u = username
+# \h = hostname
+# \W = current working directory
+
 if [[ "$TERM" == "dumb" ]]; then  # no colors
     PS1="${USERNAME}\h[\W]> "
 else
