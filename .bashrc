@@ -7,10 +7,9 @@
 
 # On JupyterHub - new terminals run only this file, andf NOT .bash_profile.
 
-# useful:
-# http://tldp.org/LDP/abs/html/sample-bashrc.html
+# useful: http://tldp.org/LDP/abs/html/sample-bashrc.html
 
-# Contact: Fernando Perez <fdo.perez@gmail.com>
+# Contact: Fernando Pérez <fdo.perez@gmail.com>
 
 ############################################################################
 # Source global definitions
@@ -124,9 +123,6 @@ export LS_COLORS='no=00:fi=00:di=01;36:ln=01;34:pi=40;33:so=01;35:bd=40;33;01:cd
 # Default options for ACK
 export ACK_OPTIONS=--text
 
-# SSH askpass config for KDE
-#export SSH_ASKPASS=/usr/bin/ksshaskpass
-
 ############################################################################
 #
 # aliases
@@ -172,9 +168,8 @@ alias cclean='conda clean -pity'
 alias cnuke='conda remove --all --yes -n'
 alias mrup='mr -d $HOME update'
 
+# other everyday aliases
 alias r2d='jupyter-repo2docker'
-
-
 alias pd=pushd
 alias pop=popd
 alias cl=clear
@@ -300,6 +295,7 @@ alias pyg="pygmentize -f terminal16m -O style=monokai"
 # Conda environments
 alias con="source $HOME/dev/copip/cactivate"  # this one opens a subshell
 
+# "cli calculator" to execute any valid Python expression
 alias pyx="python -c \"import sys;from math import *;print(eval(' '.join(sys.argv[1:])))\" "
 
 ##############################################################################
@@ -342,7 +338,7 @@ bind '"\e[B"':history-search-forward
 bind "C-p":history-search-backward
 bind "C-n":history-search-forward
 
-
+########################################################################
 # Conda configuration for environment management
 
 # >>> conda initialize >>>
@@ -360,8 +356,8 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-
-if [ "$CONDA_DEFAULT_ENV" == "base" ] && [ -d "$CONDA_PREFIX/copip" ]
+# My own conda-pip overlay - code here: https://github.com/fperez/copip
+if [ "$CONDA_DEFAULT_ENV" == "base" ] && [ -d "$CONDA_PREFIX/copip" ] && [ -f "$HOME/dev/copip/copipon.sh" ]
 then
     #echo "*** DBG: default copip"  # dbg
     source $HOME/dev/copip/copipon.sh

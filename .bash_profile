@@ -14,7 +14,6 @@
 # this file to load .bashrc directly, and put most user configuration logic
 # into .bashrc.
 
-
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
 #############################################################################
