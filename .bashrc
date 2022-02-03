@@ -101,7 +101,7 @@ export SEABORN_DATA=$HOME/local/seaborn-data
 #
 # other environment variables
 #
-export EDITOR=emacs
+export EDITOR=micro
 export CSHEDIT=emacs
 export ENSCRIPT=-MLetter
 export PAGER=less
