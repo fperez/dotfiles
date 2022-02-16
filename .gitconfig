@@ -75,6 +75,9 @@
 	clean = git-lfs clean -- %f
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
+
+# Enable nbdime as the native diff/merge tool for ipynb files.
+
 [diff "jupyternotebook"]
 	command = git-nbdiffdriver diff
 [merge "jupyternotebook"]
