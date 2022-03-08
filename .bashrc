@@ -236,6 +236,8 @@ alias t='time'
 alias f='find . | grep '
 
 alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias gdot='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+alias ghome='git --git-dir=$HOME/.homesetup --work-tree=$HOME'
 
 # Aliases for the fpsync script in various modes, as well as other simple
 # synchronization calls
