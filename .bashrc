@@ -329,16 +329,18 @@ else
 fi
 
 # Various options for interactive behavior
-shopt -s cdspell
-shopt -s cmdhist
-shopt -s dotglob
-shopt -s extglob
+if [[ "$-" =~ "i" ]]; then
+    shopt -s cdspell
+    shopt -s cmdhist
+    shopt -s dotglob
+    shopt -s extglob
 
-# bind a few keys to search patterns
-bind '"\e[A"':history-search-backward
-bind '"\e[B"':history-search-forward
-bind "C-p":history-search-backward
-bind "C-n":history-search-forward
+    # bind a few keys to search patterns
+    bind '"\e[A"':history-search-backward
+    bind '"\e[B"':history-search-forward
+    bind "C-p":history-search-backward
+    bind "C-n":history-search-forward
+fi
 
 ########################################################################
 # Conda configuration for environment management
