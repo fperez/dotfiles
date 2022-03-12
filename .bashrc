@@ -128,7 +128,7 @@ export ACK_OPTIONS=--text
 # aliases
 #
 
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "linux"* ]]; then
     alias ls='/bin/ls -F --color=tty'
     alias d="pwd; ls -o"
     alias dd='pwd; ls --color -o | grep /$'
