@@ -48,8 +48,18 @@ if [ -f $HOME/.bash_utils ]; then
     . $HOME/.bash_utils
 fi
 
-# Initialize $PATH with homebrew and conda locations so I can find their tools
-# when working over SSH (such as remote rsync calls)
+##############################################################################
+#
+# $PATH configuration
+#
+
+# Add shared script search path on hubs
+if [ -d $HOME/shared/bin ]; then
+    export PATH=$HOME/shared/bin:$PATH
+fi
+
+# Add homebrew and conda locations so I can find their tools when 
+# working over SSH (such as remote rsync calls).
 export PATH=/usr/local/bin:/usr/local/sbin:$HOME/local/conda/bin:$PATH
 
 # Configure paths, using the path generation functions in .bash_utils
