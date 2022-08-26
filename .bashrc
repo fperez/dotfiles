@@ -147,6 +147,7 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     alias dp='pwd; ls -o | grep ^-..x'
     alias dl='pwd; ls -o | grep ^l'
     alias git=hub
+    alias cdiff='git diff --no-index'
     alias bup='brew update && brew upgrade'
     alias tmoff='diskutil unmount /Volumes/Time\ Machine\ -\ Seagate\ Silver'
     alias today='date "+%b %d, %Y" | tr -d "\n" | pbcopy'
