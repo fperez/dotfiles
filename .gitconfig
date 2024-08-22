@@ -1,7 +1,7 @@
 # -*- mode: conf -*-
 [user]
 	name = Fernando Perez
-	email = Fernando.Perez@berkeley.edu
+	email = fernando.perez@berkeley.edu
 
 [include]
   # For Github username / creds / system-specific stuff, etc
@@ -63,12 +63,12 @@
 	autocorrect = 10
 
 [pager]
-	log  = diff-highlight | less
-	show = diff-highlight | less
-	diff = diff-highlight | less
+	log  = diffr | less
+	show = diffr | less
+	diff = diffr | less
 
 [interactive]
-	diffFilter = diff-highlight
+	diffFilter = diffr
 
 [filter "lfs"]
 	required = true
@@ -88,3 +88,5 @@
 	cmd = git-nbmergetool merge \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
 [mergetool]
 	prompt = false
+[credential]
+	helper = osxkeychain

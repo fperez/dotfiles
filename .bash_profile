@@ -2,8 +2,8 @@
 
 # echo '*** this is .bash_profile'  # dbg
 
-# On macOS - New iTerm windows/tabs run this file, but NOT .barhrc
-# On JupyterHub - new terminals do NOT run this file, only .bashrc
+# On macOS - New iTerm windows/tabs run this file, but NOT .bashrc
+# On JupyterHub - new terminals do NOT run this file, ONLY .bashrc
 
 # Note that the traditional Unix design idea was to have a user's session
 # contain a _single_ login shell, with all one-time actions taken there, and
@@ -14,10 +14,14 @@
 # this file to load .bashrc directly, and put most user configuration logic
 # into .bashrc.
 
+#############################################################################
+# macOS specific config here
+
+# iterm2 integration
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash"
 
 #############################################################################
-# include .bashrc if it exists
+# include .bashrc if it exists - contains all other config
 if [ -f ~/.bashrc ]; then
     . ~/.bashrc
 fi

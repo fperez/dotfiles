@@ -41,16 +41,20 @@ fi
 export MYLOGIN="fperez"
 
 ############################################################################
-#
 # Load basic bash utilities (handy functions and constants)
-#
 if [ -f $HOME/.bash_utils ]; then
     . $HOME/.bash_utils
 fi
 
+############################################################################
+# Load private info not kept in public version control
+if [ -f $HOME/.bash_secrets ]; then
+    . $HOME/.bash_secrets
+fi
+
 # Initialize $PATH with homebrew and conda locations so I can find their tools
 # when working over SSH (such as remote rsync calls)
-export PATH=/usr/local/bin:/usr/local/sbin:$HOME/local/conda/bin:$PATH
+export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$PATH
 
 # Configure paths, using the path generation functions in .bash_utils
 #
@@ -59,15 +63,9 @@ export PATH=/usr/local/bin:/usr/local/sbin:$HOME/local/conda/bin:$PATH
 # in this order.  The ones at the TOP end up first in the generated path specs,
 # so they take precedence.
 pfx="$pfx $HOME/tmp/junk"  # quick and dirty testing
-#pfx="$pfx $HOME/tmp/local"  # temporary, stable testing
 pfx="$pfx $HOME/usr"  # codes *I* have written
-#pfx="$pfx $HOME/usr/opt"  # I don't sync this across computers
 pfx="$pfx $HOME/usr/local"  # default prefix for third-party installs
 pfx="$pfx $HOME/.local"  # used by python in --user installs
-
-# NO: don't make the conda location a valid prefix until further investigation.
-# If homebrew finds the conda libraries, things break in very confusing ways.
-#pfx="$pfx $HOME/local/conda"  # used by Anaconda
 
 # Now, set all common paths based on the prefix list just built.  The
 # export_paths function ensures that all commonly needed paths get correctly
@@ -85,7 +83,7 @@ export CMAKE_INSTALL_PREFIX=$PREFIX
 # Search paths for LaTeX (Dont' forget the final colons.  The null entry `::'
 # denotes `default system directories' -- try finding that in the
 # documentation.)  Note that these *must* go under ~/texmf, because that
-# particular path is hardcoded in LaTeX and is not overridable by the user.
+# particular path is hardcod ed in LaTeX and is not overridable by the user.
 # While one could keep ~/texmf for default package installs and use other
 # locations for {tex/bib/bst}inputs, I prefer to centralize all Tex stuff in
 # one place.  Since I can't do it in ~/usr/tex, then I'll just keep everything
@@ -154,10 +152,8 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
     alias add='pbcopy < $HOME/.address'
     alias pbclean='pbpaste | pbcopy'
     alias emacsapp='open -a /Applications/Emacs.app/'
-    alias zoom='echo "https://berkeley.zoom.us/my/fperez" | pbcopy'
-    alias zoom2='echo "https://lbnl.zoom.us/my/fperez" | pbcopy'
-    alias email='echo "fernando.perez@berkeley.edu" | pbcopy'
-    alias orcid='echo 0000-0002-1725-9815 | pbcopy'
+    alias fixaudio='sudo killall coreaudiod'  # fix logitech webcam audio loop
+    alias fixbluetooth='sudo pkill bluetoothd'  # fix logitech webcam audio loop
 else
     echo "No OS-specific aliases, OS unknown.";
 fi
@@ -226,6 +222,9 @@ alias em='emacs -nw'
 alias emq='emacs -nw --no-init-file --no-site-file --load $HOME/.emacs.conf.d/init-minimal.el'
 # start emacsclient to quickly open a file in a running emacs
 alias emc='emacsclient -c -n'
+# Avoid biber/biblatex incompatibilities in tectonic
+# See https://github.com/tectonic-typesetting/tectonic/issues/893#issuecomment-1592466609
+alias tect='tectonic -Z search-path=/usr/local/texlive/2023/texmf-dist/tex/latex/biblatex'
 
 alias make2dag='make -Bnd | make2graph | dot -Tpng -o make-dag.png'
 
@@ -236,7 +235,10 @@ alias t='time'
 
 alias f='find . | grep '
 
-alias dotfiles='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
+# Git-based management of dot files and basic $HOME setup
+# See https://github.com/fperez/dotfiles 
+# and https://github.com/fperez/homesetup
+# for details
 alias gdot='git --git-dir=$HOME/.dotfiles --work-tree=$HOME'
 alias ghome='git --git-dir=$HOME/.homesetup --work-tree=$HOME'
 
@@ -271,6 +273,10 @@ alias longssync-down='hsync longs down'
 alias ritacubasync-up='hsync ritacuba up'
 alias ritacubasync-down='hsync ritacuba down'
 
+# Aliases for finding/cleaning sync conflicts arising from Dropbox/Syncthing
+alias fconf="find -E . -regex '\.\/.*sync-conflict.*|\.\/.*conflicted copy.*' -print"
+alias fconfd="find -E . -regex '\.\/.*sync-conflict.*|\.\/.*conflicted copy.*' -exec rm {} \;"
+
 ##############################################################################
 #
 # Python config: environment variables and aliases
@@ -279,12 +285,6 @@ alias ritacubasync-down='hsync ritacuba down'
 # Set startup file for interactive sessions
 #export PYTHONSTARTUP=$HOME/.pythonstartup.py
 
-# Always direct pip installations to --user location
-export PIP_USER=True
-
-# IPython completions
-#source "$HOME/dev/ipython/ipython/examples/IPython Kernel/ipython-completion.bash"
-
 # Python aliases
 alias fdbg="egrep -n 'dbg|debugx\(' *py */*.py */*/*.py */*/*/*.py | egrep -v '\.dbg|def debugx|\:[[:space:]]*\#'"
 alias fdbgc="egrep -n 'dbg' *.c *.C *.cxx *.cpp | egrep -v '\:[[:space:]]*\//'"
@@ -292,11 +292,8 @@ alias fdbgc="egrep -n 'dbg' *.c *.C *.cxx *.cpp | egrep -v '\:[[:space:]]*\//'"
 # IPython config
 alias ip='ipython'
 
-alias pycolor="pygmentize -l python -f terminal16m -O style=monokai"
-alias pyg="pygmentize -f terminal16m -O style=monokai"
-
-# Conda environments
-alias con="source $HOME/dev/copip/cactivate"  # this one opens a subshell
+# alias pycolor="pygmentize -l python -f terminal16m -O style=monokai"
+# alias pyg="pygmentize -f terminal16m -O style=monokai"
 
 # "cli calculator" to execute any valid Python expression
 alias pyx="python -c \"import sys;from math import *;print(eval(' '.join(sys.argv[1:])))\" "
@@ -344,7 +341,7 @@ if [[ "$-" =~ "i" ]]; then
 fi
 
 ########################################################################
-# Conda configuration for environment management
+# Mamba/Conda configuration for environment management
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -359,15 +356,27 @@ else
     fi
 fi
 unset __conda_setup
+
+if [ -f "/Users/fperez/local/conda/etc/profile.d/mamba.sh" ]; then
+    . "/Users/fperez/local/conda/etc/profile.d/mamba.sh"
+fi
 # <<< conda initialize <<<
 
-# My own conda-pip overlay - code here: https://github.com/fperez/copip
-if [ "$CONDA_DEFAULT_ENV" == "base" ] && [ -d "$CONDA_PREFIX/copip" ] && [ -f "$HOME/dev/copip/copipon.sh" ]
-then
-    #echo "*** DBG: default copip"  # dbg
-    source $HOME/dev/copip/copipon.sh
-else
-    #echo "*** DBG: NO CONDA"  # dbg
-    export JUPYTER_PATH=$HOME/.local/share/jupyter
-fi
+# DEACTIVATED - copip setup.
+# # My own conda-pip overlay - code here: https://github.com/fperez/copip
+# if [ "$CONDA_DEFAULT_ENV" == "base" ] && [ -d "$CONDA_PREFIX/copip" ] && [ -f "$HOME/dev/copip/copipon.sh" ]
+# then
+#     #echo "*** DBG: default copip"  # dbg
+#     source $HOME/dev/copip/copipon.sh
+# else
+#     #echo "*** DBG: NO CONDA"  # dbg
+#     export JUPYTER_PATH=$HOME/.local/share/jupyter
+# fi
+
+# # Conda environments
+# alias con="source $HOME/dev/copip/cactivate"  # this one opens a subshell
+
+# Always direct pip installations to --user location
+# export PIP_USER=True  # should only be activated when using copip
+
 #**********************  END OF FILE <.bashrc> *******************************
