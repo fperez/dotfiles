@@ -1,0 +1,25 @@
+# Configuration file for readline
+
+$include /etc/inputrc
+
+$if Python
+#"\M-i": "    "
+"\M-u": "\d\d\d\d"
+$endif
+
+#set rl_completion_append_character X
+set mark-symlinked-directories on
+
+set show-all-if-ambiguous on
+
+"C-p": history-search-backward
+"C-n": history-search-forward
+
+
+# mappings for Ctrl-left-arrow and Ctrl-right-arrow for word moving
+"\e[1;5C": forward-word
+"\e[1;5D": backward-word
+"\e[5C": forward-word
+"\e[5D": backward-word
+"\e\e[C": forward-word
+"\e\e[D": backward-word
