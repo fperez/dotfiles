@@ -16,6 +16,7 @@
 [alias]
 	ci = commit -a
 	cp = commit -a -m"Checkpoint"
+	ck = commit -a -m"Checkpoint"
 	co = checkout
 	st = status
 	br = branch
