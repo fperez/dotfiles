@@ -1,6 +1,6 @@
 # .bashrc - started by interactive non-login shells
 
-# echo '*** this is .bashrc' # dbg
+# echo '*** this is .bashrc ***' # dbg
 
 # On macOS - New iTerm windows/tabs do NOT run this file by default, unless
 # it gets explicitly sourced from ~/.bash_profile.
@@ -343,24 +343,29 @@ fi
 ########################################################################
 # Mamba/Conda configuration for environment management
 
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/Users/fperez/local/conda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/fperez/local/conda/etc/profile.d/conda.sh" ]; then
-        . "/Users/fperez/local/conda/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/fperez/local/conda/bin:$PATH"
-    fi
-fi
-unset __conda_setup
 
-if [ -f "/Users/fperez/local/conda/etc/profile.d/mamba.sh" ]; then
-    . "/Users/fperez/local/conda/etc/profile.d/mamba.sh"
+#############################################################################
+# On macOS shells launched via JupyterHub, .bash_profile is NOT called. So 
+# we need to repeat the mamba initialization sequence here. In all environments
+# that do call .bash_profile (e.g. iTerm or ssh logins), that has already been
+# run and MAMBA_ROOT_PREFIX will have been set, so we trigger on that variable.
+
+if [ -z "$MAMBA_ROOT_PREFIX" ]; then
+    # >>> mamba initialize >>>
+    # !! Contents within this block are managed by 'mamba shell init' !!
+    export MAMBA_EXE='/Users/fperez/local/conda/bin/mamba';
+    export MAMBA_ROOT_PREFIX='/Users/fperez/local/conda';
+    __mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__mamba_setup"
+    else
+        alias mamba="$MAMBA_EXE"  # Fallback on help from mamba activate
+    fi
+    unset __mamba_setup
+    # <<< mamba initialize <<<
 fi
-# <<< conda initialize <<<
+
+mamba activate base
 
 # DEACTIVATED - copip setup.
 # # My own conda-pip overlay - code here: https://github.com/fperez/copip
