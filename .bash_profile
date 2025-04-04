@@ -4,8 +4,8 @@
 
 # On macOS - New iTerm windows/tabs run this file, but NOT .bashrc.
 #   .bashrc is also NOT executed even for ssh logins.
-# On JupyterHub - new terminals do NOT run this file, ONLY .bashrc. That is
-# true even if JupyterHub is running on a macOS host.
+# On JupyterHub/JupyterLab - new terminals do NOT run this file, ONLY .bashrc.
+#   That is true even if JupyterHub is running on a macOS host.
 
 # Note that the traditional Unix design idea was to have a user's session
 # contain a _single_ login shell, with all one-time actions taken there, and

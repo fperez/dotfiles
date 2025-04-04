@@ -1,6 +1,6 @@
 # .bashrc - started by interactive non-login shells
 
-# echo '*** this is .bashrc ***' # dbg
+#echo '*** this is .bashrc ***' # dbg
 
 # On macOS - New iTerm windows/tabs do NOT run this file by default, unless
 # it gets explicitly sourced from ~/.bash_profile.
@@ -351,6 +351,7 @@ fi
 # run and MAMBA_ROOT_PREFIX will have been set, so we trigger on that variable.
 
 if [ -z "$MAMBA_ROOT_PREFIX" ]; then
+    echo "*** mamba init in bashrc, not done previously ***"  # dbg
     # >>> mamba initialize >>>
     # !! Contents within this block are managed by 'mamba shell init' !!
     export MAMBA_EXE='/Users/fperez/local/conda/bin/mamba';
