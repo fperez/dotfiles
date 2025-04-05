@@ -351,7 +351,7 @@ fi
 # run and MAMBA_ROOT_PREFIX will have been set, so we trigger on that variable.
 
 if [ -z "$MAMBA_ROOT_PREFIX" ]; then
-    echo "*** mamba init in bashrc, not done previously ***"  # dbg
+    #echo "*** mamba init in bashrc, not done previously ***"  # dbg
     # >>> mamba initialize >>>
     # !! Contents within this block are managed by 'mamba shell init' !!
     export MAMBA_EXE='/Users/fperez/local/conda/bin/mamba';
