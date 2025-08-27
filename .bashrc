@@ -159,7 +159,9 @@ else
 fi
 
 # Various update aliases
-alias cup='mamba update --all --yes'
+alias mm='micromamba'
+alias cup='micromamba update --all --yes'
+#alias cup='mamba update --all --yes'
 alias aup='conda update --all --yes'
 alias cclean='conda clean -pity'
 alias cnuke='conda remove --all --yes -n'
