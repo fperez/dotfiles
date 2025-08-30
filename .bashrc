@@ -52,7 +52,7 @@ if [ -f $HOME/.bash_secrets ]; then
     . $HOME/.bash_secrets
 fi
 
-# Initialize $PATH with homebrew and conda locations so I can find their tools
+# Initialize $PATH with homebrew locations so I can find their tools
 # when working over SSH (such as remote rsync calls)
 export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$PATH
 
@@ -160,11 +160,10 @@ fi
 
 # Various update aliases
 alias mm='micromamba'
-alias cup='micromamba update --all --yes'
-#alias cup='mamba update --all --yes'
-alias aup='conda update --all --yes'
-alias cclean='conda clean -pity'
-alias cnuke='conda remove --all --yes -n'
+#alias cup='micromamba update --all --yes'
+alias cup='mamba update --all --yes'
+alias cclean='mamba clean -pity'
+alias cnuke='mamba remove --all --yes -n'
 alias mrup='mr -d $HOME update'
 
 # other everyday aliases
@@ -343,7 +342,7 @@ if [[ "$-" =~ "i" ]]; then
 fi
 
 ########################################################################
-# Mamba/Conda configuration for environment management
+# Mamba configuration for environment management
 
 
 #############################################################################
@@ -354,10 +353,11 @@ fi
 
 if [ -z "$MAMBA_ROOT_PREFIX" ]; then
     #echo "*** mamba init in bashrc, not done previously ***"  # dbg
+
     # >>> mamba initialize >>>
     # !! Contents within this block are managed by 'mamba shell init' !!
-    export MAMBA_EXE='/Users/fperez/local/conda/bin/mamba';
-    export MAMBA_ROOT_PREFIX='/Users/fperez/local/conda';
+    export MAMBA_EXE='/Users/fperez/.local/bin/mamba';
+    export MAMBA_ROOT_PREFIX='/Users/fperez/.local/share/mamba';
     __mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
     if [ $? -eq 0 ]; then
         eval "$__mamba_setup"
@@ -366,25 +366,8 @@ if [ -z "$MAMBA_ROOT_PREFIX" ]; then
     fi
     unset __mamba_setup
     # <<< mamba initialize <<<
+
 fi
 
 mamba activate base
-
-# DEACTIVATED - copip setup.
-# # My own conda-pip overlay - code here: https://github.com/fperez/copip
-# if [ "$CONDA_DEFAULT_ENV" == "base" ] && [ -d "$CONDA_PREFIX/copip" ] && [ -f "$HOME/dev/copip/copipon.sh" ]
-# then
-#     #echo "*** DBG: default copip"  # dbg
-#     source $HOME/dev/copip/copipon.sh
-# else
-#     #echo "*** DBG: NO CONDA"  # dbg
-#     export JUPYTER_PATH=$HOME/.local/share/jupyter
-# fi
-
-# # Conda environments
-# alias con="source $HOME/dev/copip/cactivate"  # this one opens a subshell
-
-# Always direct pip installations to --user location
-# export PIP_USER=True  # should only be activated when using copip
-
 #**********************  END OF FILE <.bashrc> *******************************

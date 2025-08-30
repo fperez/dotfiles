@@ -25,8 +25,8 @@ test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shel
 #############################################################################
 # >>> mamba initialize >>>
 # !! Contents within this block are managed by 'mamba shell init' !!
-export MAMBA_EXE='/Users/fperez/local/conda/bin/mamba';
-export MAMBA_ROOT_PREFIX='/Users/fperez/local/conda';
+export MAMBA_EXE='/Users/fperez/.local/bin/mamba';
+export MAMBA_ROOT_PREFIX='/Users/fperez/.local/share/mamba';
 __mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__mamba_setup"
