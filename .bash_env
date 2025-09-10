@@ -1,0 +1,64 @@
+# .bash_env - Used for "quiet" configuration (paths, etc) for all shells.
+
+# Keep interactive configuration stuff (aliases, ect) to .bashrc
+# Make sure this file, outside of temporary debugging, echoes nothing.
+
+#echo '*** this is .bash_env ***' # dbg
+
+
+############################################################################
+# Load private info not kept in public version control
+if [ -f $HOME/.bash_secrets ]; then
+    . $HOME/.bash_secrets
+fi
+
+############################################################################
+# Load basic bash utilities (handy functions and constants)
+if [ -f $HOME/.bash_utils ]; then
+    . $HOME/.bash_utils
+fi
+
+# Initialize $PATH with homebrew locations so I can find their tools
+# when working over SSH (such as remote rsync calls)
+export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$PATH
+
+# Configure paths, using the path generation functions in .bash_utils
+#
+# These are the prefixes I typically use as --prefix options for installation 
+# of packages.  There's a method to the madness of having several of them, and
+# in this order.  The ones at the TOP end up first in the generated path specs,
+# so they take precedence.
+pfx="$pfx $HOME/tmp/junk"  # quick and dirty testing
+pfx="$pfx $HOME/usr"  # codes *I* have written
+pfx="$pfx $HOME/usr/local"  # default prefix for third-party installs
+pfx="$pfx $HOME/.local"  # used by python in --user installs
+
+# Now, set all common paths based on the prefix list just built.  The
+# export_paths function ensures that all commonly needed paths get correctly
+# set and exported to the environment.
+export_paths "$pfx"
+
+#echo "stop here"  && return
+
+# Default prefix for personal installs I use.
+export PREFIX=$HOME/usr/local
+
+# This is the name CMAKE uses for the same thing
+export CMAKE_INSTALL_PREFIX=$PREFIX
+
+# Search paths for LaTeX (Dont' forget the final colons.  The null entry `::'
+# denotes `default system directories' -- try finding that in the
+# documentation.)  Note that these *must* go under ~/texmf, because that
+# particular path is hardcod ed in LaTeX and is not overridable by the user.
+# While one could keep ~/texmf for default package installs and use other
+# locations for {tex/bib/bst}inputs, I prefer to centralize all Tex stuff in
+# one place.  Since I can't do it in ~/usr/tex, then I'll just keep everything
+# TeX related in ~/texmf
+export TEXINPUTS=.:$HOME/texmf/texinputs::
+export BIBINPUTS=.:$HOME/texmf/bibinputs::
+export BSTINPUTS=.:$HOME/texmf/bstinputs::
+
+# Seaborn's data cache
+export SEABORN_DATA=$HOME/local/seaborn-data
+
+#**********************  END OF FILE <.bash_env> ****************************

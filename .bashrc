@@ -1,15 +1,22 @@
 # .bashrc - started by interactive non-login shells
 
+# Keep ONLY interactive configuration stuff (aliases, ect) here.
+# All "quiet" configuration (paths, etc) should go to .bash_env
+
 #echo '*** this is .bashrc ***' # dbg
 
 # On macOS - New iTerm windows/tabs do NOT run this file by default, unless
 # it gets explicitly sourced from ~/.bash_profile.
 
-# On JupyterHub - new terminals run only this file, andf NOT .bash_profile.
+# On JupyterHub - new terminals run only this file, and NOT .bash_profile.
 
 # useful: http://tldp.org/LDP/abs/html/sample-bashrc.html
 
 # Contact: Fernando Pérez <fdo.perez@gmail.com>
+
+# Start by loading all "quiet" configuration
+[[ -r ~/.bash_env ]] && . ~/.bash_env
+
 
 ############################################################################
 # Source global definitions
@@ -34,71 +41,11 @@ if [ -f $HOME/.git-prompt.sh ]; then
     . $HOME/.git-prompt.sh
 fi
 
-############################################################################
-# My usual login name on most machines.  This file is set to display any login
-# that is NOT this one in red (root, when I log into machines with an atypical
-# login, etc.).
-export MYLOGIN="fperez"
-
-############################################################################
-# Load basic bash utilities (handy functions and constants)
-if [ -f $HOME/.bash_utils ]; then
-    . $HOME/.bash_utils
-fi
-
-############################################################################
-# Load private info not kept in public version control
-if [ -f $HOME/.bash_secrets ]; then
-    . $HOME/.bash_secrets
-fi
-
-# Initialize $PATH with homebrew locations so I can find their tools
-# when working over SSH (such as remote rsync calls)
-export PATH=/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/local/sbin:$PATH
-
-# Configure paths, using the path generation functions in .bash_utils
-#
-# These are the prefixes I typically use as --prefix options for installation 
-# of packages.  There's a method to the madness of having several of them, and
-# in this order.  The ones at the TOP end up first in the generated path specs,
-# so they take precedence.
-pfx="$pfx $HOME/tmp/junk"  # quick and dirty testing
-pfx="$pfx $HOME/usr"  # codes *I* have written
-pfx="$pfx $HOME/usr/local"  # default prefix for third-party installs
-pfx="$pfx $HOME/.local"  # used by python in --user installs
-
-# Now, set all common paths based on the prefix list just built.  The
-# export_paths function ensures that all commonly needed paths get correctly
-# set and exported to the environment.
-export_paths "$pfx"
-
-#echo "stop here"  && return
-
-# Default prefix for personal installs I use.
-export PREFIX=$HOME/usr/local
-
-# This is the name CMAKE uses for the same thing
-export CMAKE_INSTALL_PREFIX=$PREFIX
-
-# Search paths for LaTeX (Dont' forget the final colons.  The null entry `::'
-# denotes `default system directories' -- try finding that in the
-# documentation.)  Note that these *must* go under ~/texmf, because that
-# particular path is hardcod ed in LaTeX and is not overridable by the user.
-# While one could keep ~/texmf for default package installs and use other
-# locations for {tex/bib/bst}inputs, I prefer to centralize all Tex stuff in
-# one place.  Since I can't do it in ~/usr/tex, then I'll just keep everything
-# TeX related in ~/texmf
-export TEXINPUTS=.:$HOME/texmf/texinputs::
-export BIBINPUTS=.:$HOME/texmf/bibinputs::
-export BSTINPUTS=.:$HOME/texmf/bstinputs::
-
-# Seaborn's data cache
-export SEABORN_DATA=$HOME/local/seaborn-data
-
 ##############################################################################
 #
-# other environment variables
+# Environment variables relevant only for interactive usage
 #
+
 export EDITOR=emacs
 export CSHEDIT=emacs
 export ENSCRIPT=-MLetter
@@ -304,6 +251,11 @@ alias pyx="python -c \"import sys;from math import *;print(eval(' '.join(sys.arg
 #
 # Interactive login shell configuration
 
+# My usual login name on most machines.  This file is set to display any login
+# that is NOT this one in red (root, when I log into machines with an atypical
+# login, etc.).
+export MYLOGIN="fperez"
+
 # Interactive prompt
 if [[ "$WHOAMI" == "$MYLOGIN" ]]; then
     USERNAME=""
@@ -343,31 +295,52 @@ if [[ "$-" =~ "i" ]]; then
 fi
 
 ########################################################################
-# Mamba configuration for environment management
+# macOS-specific settings and configuration, not needed when running on
+# Linux hosts (typically JupyterHub/cloud deployments).
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
 
-#############################################################################
-# On macOS shells launched via JupyterHub, .bash_profile is NOT called. So 
-# we need to repeat the mamba initialization sequence here. In all environments
-# that do call .bash_profile (e.g. iTerm or ssh logins), that has already been
-# run and MAMBA_ROOT_PREFIX will have been set, so we trigger on that variable.
+    # Mamba config
+    #
+    # On macOS shells launched via JupyterHub/JupyterLab, .bash_profile is NOT
+    # called, as they are **interactive non-login shells** (which only call
+    # .bashrc). Therefore, we need to repeat the mamba initialization sequence
+    # here. 
+    # We need to initialize mamba in two different scenarios:
+    # 1 - if MAMBA_ROOT_PREFIX hasn't been set at all.
+    # 2 - if MAMBA_ROOT_PREFIX HAS been set, but it was inherited from the parent process. This happens when a terminal started by a LOCAL JupyterLab (i.e one started with the `juptyer lab` command and NOT launched by a JupyterHub server) is running.  
 
-if [ -z "$MAMBA_ROOT_PREFIX" ]; then
-    #echo "*** mamba init in bashrc, not done previously ***"  # dbg
-    # >>> mamba initialize >>>
-    # !! Contents within this block are managed by 'micromamba shell init' !!
-    export MAMBA_EXE='/Users/fperez/.local/bin/micromamba';
-    export MAMBA_ROOT_PREFIX='/Users/fperez/.local/share/mamba';
-    __mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
-    if [ $? -eq 0 ]; then
-        eval "$__mamba_setup"
-    else
-        alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
+    # The logic below detects either of these cases, so we also initialize mamba in jupyterlab terminals that would otherwise throw an error when calling `mamba activate` despite having MAMBA_ROOT_PREFIX set.  
+
+    # This snippet should work to configure 
+
+    # In all environments that do call .bash_profile (e.g. iTerm or ssh
+    # logins), that has already been run and MAMBA_ROOT_PREFIX will have been set,
+    # so we trigger on that variable.
+
+    if [[ -z "$MAMBA_ROOT_PREFIX" || ( -n "$JUPYTER_SERVER_URL" && -z "$JUPYTERHUB_BASE_URL" ) ]]; then
+        #echo "*** mamba init in bashrc, not done previously ***"  # dbg
+        # >>> mamba initialize >>>
+        # !! Contents within this block are managed by 'micromamba shell init' !!
+        export MAMBA_EXE='/Users/fperez/.local/bin/micromamba';
+        export MAMBA_ROOT_PREFIX='/Users/fperez/.local/share/mamba';
+        __mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+        if [ $? -eq 0 ]; then
+            eval "$__mamba_setup"
+        else
+            alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
+        fi
+        unset __mamba_setup
+        # <<< mamba initialize <<<
+
     fi
-    unset __mamba_setup
-    # <<< mamba initialize <<<
 
-fi
+    # Activate base mamba environment for everyday work
+    micromamba activate base
 
-micromamba activate base
+    # iterm2 integration
+    [[ -r ~/.iterm2_shell_integration.bash ]] && . ~/.iterm2_shell_integration.bash
+
+fi # end darwin-specific config
+
 #**********************  END OF FILE <.bashrc> *******************************
